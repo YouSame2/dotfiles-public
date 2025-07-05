@@ -1,0 +1,18 @@
+[manager]
+show_hidden = true
+
+[[plugin.prepend_fetchers]]
+id = "git"
+name = "*"
+run = "git"
+
+[[plugin.prepend_fetchers]]
+id = "git"
+name = "*/"
+run = "git"
+
+[opener]
+edit = [
+    { run = "%EDITOR% %*", block = true, for = "windows", desc = "nvim" },
+    { run = "code %*", block = true, for = "windows", desc = "code" },
+]

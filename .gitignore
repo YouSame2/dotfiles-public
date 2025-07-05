@@ -1,0 +1,6 @@
+.config/nvchad/
+.config/lazyvim/
+.env
+.aider*
+!.aider.conf.yml
+**/github-copilot/*

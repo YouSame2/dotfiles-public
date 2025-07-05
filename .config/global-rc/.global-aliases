@@ -1,0 +1,138 @@
+# this file contains all aliases that should work on both MacOS and Windows
+# for Windows only alias -> add to .bashrc
+# for MacOS only alias -> add to .zshrc
+
+###################
+# aliases
+###################
+
+# Changing "ls" to "eza"
+# 👇🏽 defaults for all eza/ls commands. ntuser= windows crit files= annoying af
+alias ls='eza --color=always --icons=always --group-directories-first --hyperlink --ignore-glob="ntuser.*|NTUSER.*"'
+alias la='eza -a --color=always --icons=always --group-directories-first --hyperlink --time-style=iso --ignore-glob="ntuser.*|NTUSER.*"'
+alias ll='eza -lh --color=always --icons=always --group-directories-first --hyperlink --time-style=iso --ignore-glob="ntuser.*|NTUSER.*"'
+alias lla='eza -alh --color=always --icons=always --group-directories-first --hyperlink --time-style=iso --ignore-glob="ntuser.*|NTUSER.*"'
+alias lt='eza -aTh -L 1 --color=always --icons=always --group-directories-first --hyperlink --time-style=iso --ignore-glob="ntuser.*|NTUSER.*"'
+
+alias less='less --use-color --ignore-case --incsearch --quit-if-one-screen'
+alias bat='bat --pager="less --use-color --ignore-case --incsearch --quit-if-one-screen --raw-control-chars"'
+
+alias grep="grep --color --ignore-case"
+alias rg="rg --smart-case"
+alias df="df -h"
+
+alias path='echo "$PATH" | tr ":" "\n"'
+
+alias nv="nvim"
+alias nvchad="NVIM_APPNAME=nvchad nvim"
+alias lazyvim="NVIM_APPNAME=lazyvim nvim"
+
+alias cht='"$DOTFILES"/.config/scripts/cht.sh'
+alias ask='"$DOTFILES"/.config/scripts/ask.sh'
+alias gaa='"$DOTFILES"/.config/scripts/gritty.sh' # git add/restore script with fzf
+
+alias so='source'
+
+# GIT ALIASES
+# credit: https://github.com/andrew8088/dotfiles/blob/main/zsh/aliases.zsh
+alias gc='git commit'
+alias gs='git status -s'
+alias gss='git status'
+alias gco='git checkout'
+alias ga='git add'
+alias gb='git branch'
+alias gba='git branch --all'
+alias gbd='git branch -D' # -D = --delete --force
+alias gcp='git cherry-pick'
+alias gd='git diff -w'
+alias gds='git diff -w --staged'
+alias gr='git restore'
+alias grs='git restore --staged'
+alias gst='git rev-parse --git-dir > /dev/null 2>&1 && git status || eza'
+alias gu='git reset --soft HEAD~1'
+alias gpr='git remote prune origin'
+alias gpp='gpr && git pull --ff-only'
+alias grd='git fetch origin && git rebase origin/master'
+alias grd='git fetch origin && (git show-ref --verify --quiet refs/remotes/origin/master && git rebase origin/master || git rebase origin/main)'
+alias gbf='git branch | head -1 | xargs' # top branch
+alias gl="git log --graph --format=format:'%C(bold blue)%h%C(reset) - %C(white)%s%C(reset) %C(green)%an %ar %C(reset) %C(bold magenta)%d%C(reset)'"
+alias gla="git log --all --graph --format=format:'%C(bold blue)%h%C(reset) - %C(white)%s%C(reset) %C(bold magenta)%d%C(reset)'"
+alias git-current-branch="git branch | grep \* | cut -d ' ' -f2"
+alias grc='git rebase --continue'
+alias gra='git rebase --abort'
+alias gec='git status | grep "both modified:" | cut -d ":" -f 2 | trim | xargs nvim -'
+alias gcan='gc --amend --no-edit'
+
+alias gp="script -q /dev/null git push -u 2>&1 | tee >(cat) | grep \"pull/new\" | awk '{print \$2}' | xargs open"
+alias gpf='git push --force-with-lease'
+
+alias gg='git branch | fzf | xargs git checkout'
+# alias gg='git switch'
+alias gup='git branch --set-upstream-to=origin/$(git-current-branch) $(git-current-branch)'
+
+alias gnext='git log --ancestry-path --format=%H ${commit}..master | tail -1 | xargs git checkout'
+alias gprev='git checkout HEAD^'
+
+###################
+# functions
+###################
+
+dotfiles() {
+  if [ -z "$1" ]; then
+    cd "$DOTFILES"
+  else
+    "$DOTFILES"/dotfiles-manager/dotfiles.sh "$@"
+  fi
+}
+
+# enter yazi from pwd q to leave changing pwd Q to leave w/o changing pwd
+function y() {
+  local tmp="$(mktemp -t "yazi-cwd.XXXXXX")" cwd
+  yazi "$@" --cwd-file="$tmp"
+  if cwd="$(command cat -- "$tmp")" && [ -n "$cwd" ] && [ "$cwd" != "$PWD" ]; then
+    builtin cd -- "$cwd"
+  fi
+  rm -f -- "$tmp"
+}
+
+help() {
+  "$@" --help | bat --language=help --style=plain --color=always
+}
+
+# extract based on extension: https://gitlab.com/dwt1/dotfiles/-/blob/master/.bashrc?ref_type=heads
+# function ex {
+#  if [ -z "$1" ]; then
+#     # display usage if no parameters given
+#     echo "Usage: ex <path/file_name>.<zip|rar|bz2|gz|tar|tbz2|tgz|Z|7z|xz|ex|tar.bz2|tar.gz|tar.xz>"
+#     echo "       extract <path/file_name_1.ext> [path/file_name_2.ext] [path/file_name_3.ext]"
+#  else
+#     for n in "$@"
+#     do
+#       if [ -f "$n" ] ; then
+#           case "${n%,}" in
+#             *.cbt|*.tar.bz2|*.tar.gz|*.tar.xz|*.tbz2|*.tgz|*.txz|*.tar)
+#                          tar xvf "$n"       ;;
+#             *.lzma)      unlzma ./"$n"      ;;
+#             *.bz2)       bunzip2 ./"$n"     ;;
+#             *.cbr|*.rar)       unrar x -ad ./"$n" ;;
+#             *.gz)        gunzip ./"$n"      ;;
+#             *.cbz|*.epub|*.zip)       unzip ./"$n"       ;;
+#             *.z)         uncompress ./"$n"  ;;
+#             *.7z|*.arj|*.cab|*.cb7|*.chm|*.deb|*.dmg|*.iso|*.lzh|*.msi|*.pkg|*.rpm|*.udf|*.wim|*.xar)
+#                          7z x ./"$n"        ;;
+#             *.xz)        unxz ./"$n"        ;;
+#             *.exe)       cabextract ./"$n"  ;;
+#             *.cpio)      cpio -id < ./"$n"  ;;
+#             *.cba|*.ace)      unace x ./"$n"      ;;
+#             *)
+#                          echo "ex: '$n' - unknown archive method"
+#                          return 1
+#                          ;;
+#           esac
+#       else
+#           echo "'$n' - file does not exist"
+#           return 1
+#       fi
+#     done
+# fi
+# }
